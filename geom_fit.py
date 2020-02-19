@@ -1,17 +1,17 @@
 from PIL import Image
 import numpy as np
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, minimize
 import pickle as pkl
 import pygame
 import Settings
-from fitting_costs import rect_cost, mean_cost, fixed_squares, moving_squares
+from fitting_costs import rect_cost, mean_cost, fixed_squares, moving_squares, minim_fixed_squares
 
 
 # ================================INITIALISING========================================
 pygame.init()
 
 
-im = Image.open('smiley.jpg')
+im = Image.open('sunset edit 4.png')
 im = im.resize((Settings.xsize,Settings.ysize))
 im = im.convert('RGB')
 im.show()
@@ -54,8 +54,8 @@ while not done:
     # cRed,cGreen,cBlue = round(q[2]),round(q[3]),round(q[4])
     # currentshapes.append((pygame.Rect(l,t,w,h),(cRed,cGreen,cBlue)))
 
-
-    q,r = curve_fit(fixed_squares(s),xvals,yvals,p0=[100,100,100])
+    q,r = minimize(minim_fixed_squares(s,yvals),x0=(xvals,100,100,100))#,args=(100,100,100))
+    #q,r = curve_fit(minim_fixed_squares(s),xvals,yvals,p0=[100,100,100])
     scale = int(s*Settings.xsize)
     l = (Settings.xsize-scale)/2
     t = (Settings.ysize-scale)/2
@@ -63,6 +63,16 @@ while not done:
     h = scale
     cRed,cGreen,cBlue = round(q[0]),round(q[1]),round(q[2])
     currentshapes.append((pygame.Rect(l,t,w,h),(cRed,cGreen,cBlue)))
+
+
+    # q,r = curve_fit(fixed_squares(s),xvals,yvals,p0=[100,100,100])
+    # scale = int(s*Settings.xsize)
+    # l = (Settings.xsize-scale)/2
+    # t = (Settings.ysize-scale)/2
+    # w = scale
+    # h = scale
+    # cRed,cGreen,cBlue = round(q[0]),round(q[1]),round(q[2])
+    # currentshapes.append((pygame.Rect(l,t,w,h),(cRed,cGreen,cBlue)))
 
     # q,r = curve_fit(rect_cost,xvals,yvals,p0=pp)
     # l,t,w,h = int(q[0]),round(q[1]),round(q[2]),round(q[3])
@@ -74,5 +84,5 @@ while not done:
     # currentshapes.append((pygame.Rect(0,0,Settings.xsize,Settings.ysize),(cRed,cGreen,cBlue)))
 
     s_ind += 1
-    clock.tick(5)
+    clock.tick(20)
     pygame.display.flip()
