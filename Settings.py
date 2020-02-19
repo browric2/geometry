@@ -1,6 +1,6 @@
 import pygame
 
-xsize = 50
-ysize = 50
+xsize = 200
+ysize = 200
 size = (xsize,ysize)
 screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
