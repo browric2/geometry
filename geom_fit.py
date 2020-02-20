@@ -4,15 +4,15 @@ from scipy.optimize import curve_fit, minimize
 import pickle as pkl
 import pygame
 import Settings
-from fitting_costs import rect_cost, mean_cost, fixed_squares, moving_squares, minim_fixed_squares
+from fitting_costs import rect_cost, mean_cost, fixed_squares, moving_squares, minim_fixed_squares,\
+    moving_squares_av_colour, av_colour
 
 
 # ================================INITIALISING========================================
 pygame.init()
 
-
 im = Image.open('sunset edit 4.png')
-im = im.resize((Settings.xsize,Settings.ysize))
+im = im.resize((Settings.xsize, Settings.ysize))
 im = im.convert('RGB')
 im.show()
 arr = np.array(im)
@@ -24,27 +24,25 @@ clock = pygame.time.Clock()
 
 currentshapes = []
 
-#pp=[Settings.xsize/4,Settings.ysize/4,Settings.xsize/2,Settings.ysize/2,100,100,100]
-pp=[20,20,20,20,100,100,100]
-
+# pp=[Settings.xsize/4,Settings.ysize/4,Settings.xsize/2,Settings.ysize/2,100,100,100]
+pp = [20, 20, 20, 20, 100, 100, 100]
 
 # ================================PROGRAM LOOP========================================
 done = False
 
 nsquares = 20
-scales = [1-i for i in np.linspace(0,1,nsquares)[:-1]]
+scales = [1 - i for i in np.linspace(0, 1, nsquares)[:-1]]
 
 s_ind = 0
 while not done:
 
-    s = scales[s_ind % nsquares-1]
-    Settings.screen.fill((255,255,255))
+    s = scales[s_ind % nsquares - 1]
+    Settings.screen.fill((255, 255, 255))
     pygame.event.get()
 
     for cs in currentshapes:
-        print(cs[1],cs[0])
+        print(cs[1], cs[0])
         pygame.draw.rect(Settings.screen, cs[1], cs[0])
-
 
     # scale = int(s*Settings.xsize)
     # q,r = curve_fit(moving_squares(s),xvals,yvals,p0=[100,100,100,(Settings.xsize-scale)/2,(Settings.ysize-scale)/2],)
@@ -54,18 +52,28 @@ while not done:
     # cRed,cGreen,cBlue = round(q[2]),round(q[3]),round(q[4])
     # currentshapes.append((pygame.Rect(l,t,w,h),(cRed,cGreen,cBlue)))
 
-    q,r = minimize(minim_fixed_squares(s,yvals),x0=(xvals,100,100,100))#,args=(100,100,100))
-    #q,r = curve_fit(minim_fixed_squares(s),xvals,yvals,p0=[100,100,100])
-    scale = int(s*Settings.xsize)
-    l = (Settings.xsize-scale)/2
-    t = (Settings.ysize-scale)/2
+    # try with shape being assigned to average colour of pixels
+
+    scale = int(s * Settings.xsize) - 1
+    q, r = curve_fit(moving_squares_av_colour((s, yvals)), xvals, yvals, p0=[(Settings.xsize - scale) / 2,
+                    (Settings.ysize - scale) / 2], bounds=(0, Settings.xsize - scale))
+    l, t = int(q[0]), round(q[1])
     w = scale
     h = scale
-    cRed,cGreen,cBlue = round(q[0]),round(q[1]),round(q[2])
-    currentshapes.append((pygame.Rect(l,t,w,h),(cRed,cGreen,cBlue)))
+    cRed, cGreen, cBlue = av_colour(yvals, l, t, w, h)
+    currentshapes.append((pygame.Rect(l, t, w, h), (cRed, cGreen, cBlue)))
 
+    # q, r = minimize(minim_fixed_squares(s, yvals), x0=(xvals, 100, 100, 100))  # ,args=(100,100,100))
+    # # q,r = curve_fit(minim_fixed_squares(s),xvals,yvals,p0=[100,100,100])
+    # scale = int(s * Settings.xsize)
+    # l = (Settings.xsize - scale) / 2
+    # t = (Settings.ysize - scale) / 2
+    # w = scale
+    # h = scale
+    # cRed, cGreen, cBlue = round(q[0]), round(q[1]), round(q[2])
+    # currentshapes.append((pygame.Rect(l, t, w, h), (cRed, cGreen, cBlue)))
 
-    # q,r = curve_fit(fixed_squares(s),xvals,yvals,p0=[100,100,100])
+    # q,r = curve_fit(fixed_squares(s),xvals,yvals,p0=[100,100,100])    # working colourfit
     # scale = int(s*Settings.xsize)
     # l = (Settings.xsize-scale)/2
     # t = (Settings.ysize-scale)/2
